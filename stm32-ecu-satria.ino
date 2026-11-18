@@ -37,6 +37,12 @@ typedef enum { MODE_DAILY = 0, MODE_RACING, MODE_EXTREME, MODE_CUSTOM } ModePeng
 typedef enum { BBM_PERTALITE = 0, BBM_PERTAMAX } JenisBBM;
 typedef enum { IGN_IDLE = 0, IGN_WAITING_CHARGE, IGN_WAITING_SPARK } IgnitionSequenceState;
 
+// --- STRUKTUR DATA IGNITION COMMAND (DIPINDAH KE ATAS AGAR TERBACA COMPILER) ---
+typedef struct {
+    int16_t finalAdvance10;
+    uint32_t finalDwellUs;
+} IgnitionCommand_t;
+
 // --- PROTEKSI DATA RAM DENGAN BIT-INVERSION MASKING ---
 typedef struct {
     uint32_t data;
@@ -259,11 +265,6 @@ void saveModeToEEPROM(uint8_t mode) {
     EEPROM.put(addr, mode);
     EEPROM.write(0, 0x54); 
 }
-
-typedef struct {
-    int16_t finalAdvance10;
-    uint32_t finalDwellUs;
-} IgnitionCommand_t;
 
 IgnitionCommand_t HAL_IgnitionLogic_Calculate(uint16_t rpm, uint8_t tps, int16_t temp10, uint16_t batt10, ModePengapian mode, EngineState state, bool fault) {
     IgnitionCommand_t cmd;
