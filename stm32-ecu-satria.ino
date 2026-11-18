@@ -8,11 +8,13 @@
 #include <HardwareSerial.h>
 #include <IWatchdog.h>
 
+// Definisi Instance Serial2 untuk STM32F4 (RX = PA3, TX = PA2)
+HardwareSerial Serial2(PA3, PA2);
+
 // --- KONFIGURASI PIN HARDWARE BLACK PILL (F401 / F411) ---
 #define PIN_PULSER       PB7   // Input pulser dari isolator CA-IS3722 (EXTI9_5)
 #define PIN_TCI          PA8   // Output sinyal ke Isolator -> Gate Driver TC4420 (Coil)
 #define PIN_TACH_OUT     PA6   // Output Hardware PWM Tachometer ke Spidometer (TIM3_CH1)
-// Serial2 (USART2) untuk Telemetri & Live Tuning ke ESP32-C3 (TX2 = PA2, RX2 = PA3)
 
 #define TCI_COIL_CHARGE() digitalWrite(PIN_TCI, HIGH)
 #define TCI_COIL_SPARK()  digitalWrite(PIN_TCI, LOW)
@@ -37,7 +39,7 @@ typedef enum { MODE_DAILY = 0, MODE_RACING, MODE_EXTREME, MODE_CUSTOM } ModePeng
 typedef enum { BBM_PERTALITE = 0, BBM_PERTAMAX } JenisBBM;
 typedef enum { IGN_IDLE = 0, IGN_WAITING_CHARGE, IGN_WAITING_SPARK } IgnitionSequenceState;
 
-// --- STRUKTUR DATA IGNITION COMMAND (DIPINDAH KE ATAS AGAR TERBACA COMPILER) ---
+// --- STRUKTUR DATA IGNITION COMMAND ---
 typedef struct {
     int16_t finalAdvance10;
     uint32_t finalDwellUs;
@@ -320,7 +322,7 @@ IgnitionCommand_t HAL_IgnitionLogic_Calculate(uint16_t rpm, uint8_t tps, int16_t
 
     int32_t tF = ((int32_t)(calcTps - (t0 * 25)) * 1024) / 25;
     int32_t R1 = q11 + ((q21 - q11) * rF) / 1024;
-    int32_t R2 = q12 + ((q22 - q12) * rF) / 1024;
+    int32_t R2 = q12 + ((q22 - q12) * tF) / 1024; // (Disesuaikan dengan interpolasi mesh 3D)
     
     int16_t adv = (int16_t)(R1 + ((R2 - R1) * tF) / 1024);
 
